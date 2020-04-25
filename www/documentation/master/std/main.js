@@ -1846,9 +1846,170 @@
         list.sort();
         return list;
     }
+
+    var regexpLatin = /[\xc0-\xd6\xd8-\xf6\xf8-\xff\u0100-\u017f]/g;
+    var unicodeTable = {
+        // Latin-1 Supplement block.
+        '\xc0': 'A',  '\xc1': 'A', '\xc2': 'A', '\xc3': 'A', '\xc4': 'A', '\xc5': 'A',
+        '\xe0': 'a',  '\xe1': 'a', '\xe2': 'a', '\xe3': 'a', '\xe4': 'a', '\xe5': 'a',
+        '\xc7': 'C',  '\xe7': 'c',
+        '\xd0': 'D',  '\xf0': 'd',
+        '\xc8': 'E',  '\xc9': 'E', '\xca': 'E', '\xcb': 'E',
+        '\xe8': 'e',  '\xe9': 'e', '\xea': 'e', '\xeb': 'e',
+        '\xcc': 'I',  '\xcd': 'I', '\xce': 'I', '\xcf': 'I',
+        '\xec': 'i',  '\xed': 'i', '\xee': 'i', '\xef': 'i',
+        '\xd1': 'N',  '\xf1': 'n',
+        '\xd2': 'O',  '\xd3': 'O', '\xd4': 'O', '\xd5': 'O', '\xd6': 'O', '\xd8': 'O',
+        '\xf2': 'o',  '\xf3': 'o', '\xf4': 'o', '\xf5': 'o', '\xf6': 'o', '\xf8': 'o',
+        '\xd9': 'U',  '\xda': 'U', '\xdb': 'U', '\xdc': 'U',
+        '\xf9': 'u',  '\xfa': 'u', '\xfb': 'u', '\xfc': 'u',
+        '\xdd': 'Y',  '\xfd': 'y', '\xff': 'y',
+        '\xc6': 'Ae', '\xe6': 'ae',
+        '\xde': 'Th', '\xfe': 'th',
+        '\xdf': 'ss',
+        // Latin Extended-A block.
+        '\u0100': 'A',  '\u0102': 'A', '\u0104': 'A',
+        '\u0101': 'a',  '\u0103': 'a', '\u0105': 'a',
+        '\u0106': 'C',  '\u0108': 'C', '\u010a': 'C', '\u010c': 'C',
+        '\u0107': 'c',  '\u0109': 'c', '\u010b': 'c', '\u010d': 'c',
+        '\u010e': 'D',  '\u0110': 'D', '\u010f': 'd', '\u0111': 'd',
+        '\u0112': 'E',  '\u0114': 'E', '\u0116': 'E', '\u0118': 'E', '\u011a': 'E',
+        '\u0113': 'e',  '\u0115': 'e', '\u0117': 'e', '\u0119': 'e', '\u011b': 'e',
+        '\u011c': 'G',  '\u011e': 'G', '\u0120': 'G', '\u0122': 'G',
+        '\u011d': 'g',  '\u011f': 'g', '\u0121': 'g', '\u0123': 'g',
+        '\u0124': 'H',  '\u0126': 'H', '\u0125': 'h', '\u0127': 'h',
+        '\u0128': 'I',  '\u012a': 'I', '\u012c': 'I', '\u012e': 'I', '\u0130': 'I',
+        '\u0129': 'i',  '\u012b': 'i', '\u012d': 'i', '\u012f': 'i', '\u0131': 'i',
+        '\u0134': 'J',  '\u0135': 'j',
+        '\u0136': 'K',  '\u0137': 'k', '\u0138': 'k',
+        '\u0139': 'L',  '\u013b': 'L', '\u013d': 'L', '\u013f': 'L', '\u0141': 'L',
+        '\u013a': 'l',  '\u013c': 'l', '\u013e': 'l', '\u0140': 'l', '\u0142': 'l',
+        '\u0143': 'N',  '\u0145': 'N', '\u0147': 'N', '\u014a': 'N',
+        '\u0144': 'n',  '\u0146': 'n', '\u0148': 'n', '\u014b': 'n',
+        '\u014c': 'O',  '\u014e': 'O', '\u0150': 'O',
+        '\u014d': 'o',  '\u014f': 'o', '\u0151': 'o',
+        '\u0154': 'R',  '\u0156': 'R', '\u0158': 'R',
+        '\u0155': 'r',  '\u0157': 'r', '\u0159': 'r',
+        '\u015a': 'S',  '\u015c': 'S', '\u015e': 'S', '\u0160': 'S',
+        '\u015b': 's',  '\u015d': 's', '\u015f': 's', '\u0161': 's',
+        '\u0162': 'T',  '\u0164': 'T', '\u0166': 'T',
+        '\u0163': 't',  '\u0165': 't', '\u0167': 't',
+        '\u0168': 'U',  '\u016a': 'U', '\u016c': 'U', '\u016e': 'U', '\u0170': 'U', '\u0172': 'U',
+        '\u0169': 'u',  '\u016b': 'u', '\u016d': 'u', '\u016f': 'u', '\u0171': 'u', '\u0173': 'u',
+        '\u0174': 'W',  '\u0175': 'w',
+        '\u0176': 'Y',  '\u0177': 'y', '\u0178': 'Y',
+        '\u0179': 'Z',  '\u017b': 'Z', '\u017d': 'Z',
+        '\u017a': 'z',  '\u017c': 'z', '\u017e': 'z',
+        '\u0132': 'IJ', '\u0133': 'ij',
+        '\u0152': 'Oe', '\u0153': 'oe',
+        '\u0149': "'n", '\u017f': 's'
+    };
+
+    function normalizePattern(str) {
+        return str.replace(regexpLatin, unicodeTable)
+    }
+    function newSlice(index) {
+        return { index, length: 1 }
+    }
+    function newMatch(slice) {
+        return { slices: [slice], length: slice.length, score: 0 };
+    }
+
+    function customFuzzySearch(text, pattern_) {
+        if (text.length === 0 || pattern_.length <= 1) {
+            return null;
+        }
+
+        var pattern = normalizePattern(pattern_);
+        var patternLower = pattern.toLowerCase();
+        var patternFirstChar = pattern.charAt(0);
+        var patternFirstCharLower = patternLower.charAt(0);
+
+        var matches = [];
+        for (var textIndex = 0; textIndex < text.length; textIndex++) {
+            var textChar = text.charAt(textIndex)
+            var textCharLower = textChar.toLowerCase();
+
+            for (var matchIndex = 0; matchIndex < matches.length; matchIndex++) {
+                var match = matches[matchIndex];
+                if (match.length < pattern.length) {
+                    var patternChar = pattern.charAt(match.length);
+                    var patternCharLower = patternLower.charAt(match.length);
+                    if (patternCharLower === textCharLower) {
+                        var slice = match.slices[match.slices.length - 1];
+                        var sliceGap = textIndex - (slice.index + slice.length);
+                        if (sliceGap > 0) {
+                            slice = newSlice(textIndex);
+                            match.slices.push(slice);
+                        } else {
+                            slice.length++;
+                        }
+                        match.length++;
+                    }
+                }
+            }
+
+            var isNewMatch = textCharLower === patternFirstCharLower;
+            if (isNewMatch) {
+                var slice = newSlice(textIndex);
+                var match = newMatch(slice);
+                matches.push(match);
+            }
+        }
+
+        // TODO: we could have a single pass alg when we are satisfied with
+        // our scoring scheme.
+        var matchesComplete = []
+        for (var matchIndex = 0; matchIndex < matches.length; matchIndex++) {
+            var match = matches[matchIndex];
+            if (match.length === pattern.length) {
+                // we have a complete match
+                match.score = getMatchScore(matches[matchIndex], pattern, patternLower, text);
+                matchesComplete.push(match);
+            }
+        }
+
+        // only keep complete match
+        if (matchesComplete.length === 0) {
+            return null;
+        }
+        matchesComplete.sort(function (m1, m2) {
+            return m2.score - m1.score;
+        });
+        return matchesComplete[0];
+    }
+
+    function getMatchScore(match, pattern, patternLower, text) {
+        var score = 0;
+        var slices = match.slices;
+        for (var sliceIndex = 0; sliceIndex < slices.length; sliceIndex++) {
+            var slice = slices[sliceIndex];
+
+            score += 16 * slice.length;
+
+            // decrease score when we have a gap
+            if (sliceIndex > 0) {
+                var prevSlice = slices[sliceIndex - 1];
+                var prevSliceGap = slice.index - (prevSlice.index + prevSlice.length);
+                score -= 3 + prevSliceGap;
+            }
+
+            // increase score when we are at the boundary of a word
+            if (slice.index === 0) {
+                score += 8;
+            } else if (text.charAt(slice.index - 1) === ".") {
+                score += 8;
+            }
+
+            // TODO:
+            //  - scoring CamelCase and exact matches
+            //  - scoring non-words and separators
+        }
+        return score;
+    }
+
     function renderSearch() {
         var matchedItems = [];
-        var ignoreCase = (curNavSearch.toLowerCase() === curNavSearch);
         var terms = getSearchTerms();
 
         decl_loop: for (var declIndex = 0; declIndex < zigAnalysis.decls.length; declIndex += 1) {
@@ -1857,58 +2018,37 @@
 
             var decl = zigAnalysis.decls[declIndex];
             var lastPkgName = canonPath.pkgNames[canonPath.pkgNames.length - 1];
-            var fullPathSearchText = lastPkgName + "." + canonPath.declNames.join('.');
+            var fullPathSearchTerms = [lastPkgName].concat(canonPath.declNames);
             var astNode = zigAnalysis.astNodes[decl.src];
             var fileAndDocs = zigAnalysis.files[astNode.file];
             if (astNode.docs != null) {
                 fileAndDocs += "\n" + astNode.docs;
             }
-            var fullPathSearchTextLower = fullPathSearchText;
-            if (ignoreCase) {
-                fullPathSearchTextLower = fullPathSearchTextLower.toLowerCase();
-                fileAndDocs = fileAndDocs.toLowerCase();
-            }
-
-            var points = 0;
             for (var termIndex = 0; termIndex < terms.length; termIndex += 1) {
                 var term = terms[termIndex];
-
-                // exact, case sensitive match of full decl path
-                if (fullPathSearchText === term) {
-                    points += 4;
-                    continue;
+                var match = customFuzzySearch(fullPathSearchTerms.join("."), term);
+                if (match) {
+                    matchedItems.push({
+                        decl: decl,
+                        path: canonPath,
+                        text: fullPathSearchTerms.join("."),
+                        match: match,
+                    });
+                } else {
+                    continue decl_loop;
                 }
-                // exact, case sensitive match of just decl name
-                if (decl.name == term) {
-                    points += 3;
-                    continue;
-                }
-                // substring, case insensitive match of full decl path
-                if (fullPathSearchTextLower.indexOf(term) >= 0) {
-                    points += 2;
-                    continue;
-                }
-                if (fileAndDocs.indexOf(term) >= 0) {
-                    points += 1;
-                    continue;
-                }
-
-                continue decl_loop;
             }
-
-            matchedItems.push({
-                decl: decl,
-                path: canonPath,
-                points: points,
-            });
         }
 
         if (matchedItems.length !== 0) {
             matchedItems.sort(function(a, b) {
-                var cmp = operatorCompare(b.points, a.points);
+                var cmp = operatorCompare(b.match.score, a.match.score);
                 if (cmp != 0) return cmp;
-                return operatorCompare(a.decl.name, b.decl.name);
+                return a.text.localeCompare(b.text);
             });
+
+            // XXX
+            window.matchedItems = matchedItems;
 
             var searchTrimmed = false
             var searchTrimResultsMaxItems = 200
@@ -1919,12 +2059,22 @@
 
             var domListSearchResultsFragment = createDomListFragment(matchedItems.length, '<li><a href="#"></a></li>');
             for (var i = 0; i < matchedItems.length; i += 1) {
+                var item = matchedItems[i];
                 var liDom = domListSearchResultsFragment.children[i]
-                var aDom = liDom.children[0]
-                var match = matchedItems[i];
-                var lastPkgName = match.path.pkgNames[match.path.pkgNames.length - 1];
-                aDom.textContent = lastPkgName + "." + match.path.declNames.join('.');
-                aDom.setAttribute('href', navLink(match.path.pkgNames, match.path.declNames));
+                var aDom = liDom.children[0];
+                var textChunks = [];
+                var lastSliceIndex = 0;
+                for (var sliceIndex = 0; sliceIndex < item.match.slices.length; sliceIndex++) {
+                    var slice = item.match.slices[sliceIndex];
+                    textChunks.push(item.text.slice(lastSliceIndex, slice.index));
+                    textChunks.push('<b>');
+                    textChunks.push(item.text.slice(slice.index, slice.index + slice.length));
+                    textChunks.push('</b>');
+                    lastSliceIndex = slice.index + slice.length;
+                }
+                textChunks.push(item.text.slice(lastSliceIndex));
+                aDom.innerHTML = textChunks.join('');
+                aDom.setAttribute('href', navLink(item.path.pkgNames, item.path.declNames));
             }
 
             domListSearchResults.innerHTML = ""
@@ -1998,3 +2148,70 @@
         }
     }
 })();
+
+
+// function getSlicesOverlap(s1, s2) {
+//     var overlap = Math.min(s1.index + s1.length, s2.index + s2.length) - Math.max(s1.index, s2.index)
+//     if (overlap > 0) {
+//         return overlap;
+//     }
+//     return 0;
+// }
+
+// scoring of matches
+// for (var matchIndex = 0; matchIndex < matches.length; matchIndex++) {
+//     var score = 0;
+//     var match = matches[matchIndex];
+//     var textSliceIndex = 0;
+//     for (var matchSliceIndex = 0; matchSliceIndex < match.slices.length; matchSliceIndex++) {
+//         var matchSlice = match.slices[matchSliceIndex];
+//         var prevSliceOverlapRatio = 0;
+//         while (1) {
+//             var textSlice = textSlices[textSliceIndex];
+//             var sliceOverlap = getSlicesOverlap(matchSlice, textSlice);
+//             if (sliceOverlap > 0) {
+//                 var sliceOverlapRatio = (sliceOverlap / textSlice.length);
+//                 var sliceScore = sliceOverlapRatio * sliceOverlapRatio;
+//                 if (prevSliceOverlapRatio === 1) {
+//                     sliceScore *= 3;
+//                 } else if (matchSlice.index === textSlice.index) {
+//                     sliceScore *= 2;
+//                 }
+//                 score += sliceScore;
+//             }
+//             if (matchSlice.index + matchSlice.length <= textSlice.index + textSlice.length) {
+//                 break;
+//             }
+//             prevSliceOverlapRatio = sliceOverlapRatio;
+//             textSliceIndex++;
+//         }
+//         // score *= matchSlice.caseMatchCount / matchSlice.length;
+//     }
+//     match.score = score;
+
+// var biggestSlice = null
+// for (var matchSliceIndex = 0; matchSliceIndex < match.slices.length; matchSliceIndex++) {
+//     var slice = match.slices[matchSliceIndex];
+//     if (!biggestSlice || biggestSlice.length < slice.length) {
+//         biggestSlice = slice;
+//     }
+// }
+
+// match.score = biggestSlice.length / match.slices.length;
+
+// var firstOrder = Math.round(matchOverlapRatio * 1000);
+// var secondOrder = 0;
+// var thirdOrder = 0;
+
+// // var sliceBestGap = sliceBest.index + text.length - (sliceBest.index + sliceBest.length);
+// // var firstOrder = slicesByLength[0].length
+// // var secondOrder = ~sliceBestGap;
+// // var thirdOrder = match.perfectMatchCount;
+// // var fourthOrder = slices.length > 1 ? slicesByLength[1].length : 0;
+
+// match.score = (
+//     ((firstOrder  << 16) & 0xffff0000) |
+//     ((secondOrder <<  8) & 0x0000ff00) |
+//     ((thirdOrder  <<  0) & 0x000000ff)
+// ) / 0xffffffff;
+// }
